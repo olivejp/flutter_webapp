@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "769660675898",
+    "firebase_url": "https://venteenligne-87d39.firebaseio.com",
+    "project_id": "venteenligne-87d39",
+    "storage_bucket": "venteenligne-87d39.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:769660675898:android:697f05f7e02c8f75cd9203",
+        "android_client_info": {
+          "package_name": "nc.oliweb.foodnc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "769660675898-vi9jjqf2bbeb10b7h7ug0kuivoo1hds9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nc.oliweb.foodnc",
+            "certificate_hash": "904899869788d6483e57f9389264dbf5a8bfef70"
+          }
+        },
+        {
+          "client_id": "769660675898-8pqg9u1d4jvs04t06t03a2c2pdi33d00.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8sLz5qHoevEGotjjA3KWxXt20zWG3GhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "769660675898-8pqg9u1d4jvs04t06t03a2c2pdi33d00.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
