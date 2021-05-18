@@ -2,22 +2,30 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:flutter_webapp/domain/firestore/categorie.domain.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_webapp/domain/gouv-data-record-wrapper.domain.dart';
 import 'package:flutter_webapp/domain/gouv-data-wrapper.domain.dart';
-import 'package:flutter_webapp/domain/tribu-province-nord.domain.dart';
-import 'package:flutter_webapp/service/firestore/categorie.service.dart';
 import 'package:flutter_webapp/service/rest/tribu-pnord.service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
 class MyHomePageBloc {
   static MyHomePageBloc _instance;
 
-  final CategorieService categorieService = CategorieService.getInstance;
   final TribuProvinceNordService tribuProvinceNordService =
       TribuProvinceNordService.getInstance;
+
   final BehaviorSubject<int> streamCount = BehaviorSubject(seedValue: 0);
+  final BehaviorSubject<bool> streamReload = BehaviorSubject(seedValue: false);
+  final BehaviorSubject<GouvDataRecordWrapper> streamTribuSelected =
+      BehaviorSubject(seedValue: null);
+  final BehaviorSubject<List<GouvDataRecordWrapper>> streamPageHasChanged =
+      BehaviorSubject(seedValue: []);
   int _counter = 0;
+  String query;
+  Timer _debounce;
+  TextEditingController searchEditingController = TextEditingController();
 
   // Private constructor with the ._()
   MyHomePageBloc._();
@@ -33,9 +41,20 @@ class MyHomePageBloc {
     return _instance;
   }
 
-  Future<Tuple2<List<TribuProvinceNord>, int>> getListTribu(
-      int pageNumber, int pageSize) {
-    Completer<Tuple2<List<TribuProvinceNord>, int>> completer = Completer();
+  onSearchChanged(String query) {
+    this.query = query;
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      this.launchReload();
+    });
+  }
+
+  launchReload() {
+    this.streamReload.sink.add(true);
+  }
+  Future<Tuple2<List<GouvDataRecordWrapper>, int>> getListTribu(
+      int pageNumber, int pageSize, String query) {
+    Completer<Tuple2<List<GouvDataRecordWrapper>, int>> completer = Completer();
     Map<String, dynamic> queryParameters = new HashMap();
     queryParameters.putIfAbsent('dataset', () => 'tribus-en-province-nord');
     queryParameters.putIfAbsent('sort', () => 'nom_tribu');
@@ -46,6 +65,9 @@ class MyHomePageBloc {
       queryParameters.putIfAbsent(
           'start', () => (pageNumber * pageSize).toString());
     }
+    if (query != null && query.isNotEmpty) {
+      queryParameters.putIfAbsent('q', () => query);
+    }
     tribuProvinceNordService
         .findAll(queryParameters: queryParameters)
         .then((tuple) {
@@ -54,9 +76,9 @@ class MyHomePageBloc {
 
       this.totalPage = wrapper.nhits;
 
-      Future.delayed(Duration(seconds: 5),
-          () => completer.complete(Tuple2(tuple.item1, this.totalPage)));
-      // completer.complete(Tuple2(tuple.item1, this.totalPage));
+      completer.complete(Tuple2(tuple.item1, this.totalPage));
+
+      streamPageHasChanged.sink.add(tuple.item1);
     });
     return completer.future;
   }
@@ -66,51 +88,31 @@ class MyHomePageBloc {
     this.streamCount.sink.add(this._counter);
   }
 
-  Future<List<Categorie>> getCategoriePage(int pageNumber, int pageSize) {
-    Completer completer = Completer<List<Categorie>>();
-    if (pageNumber == 0) {
-      completer.complete([
-        Categorie(uid: '123', name: 'Pantalon'),
-        Categorie(uid: '456', name: 'Pantalon'),
-        Categorie(uid: '789', name: 'Pantalon'),
-        Categorie(uid: '101', name: 'Pantalon'),
-        Categorie(uid: '1112', name: 'Pantalon'),
-        Categorie(uid: '13', name: 'Pantalon'),
-        Categorie(uid: '14', name: 'Pantalon'),
-        Categorie(uid: '15', name: 'Pantalon'),
-        Categorie(uid: '416', name: 'Pantalon'),
-        Categorie(uid: '456', name: 'Pantalon'),
-      ]);
-    }
-    if (pageNumber == 1) {
-      completer.complete([
-        Categorie(uid: '123', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol dfghdf gh dfg'),
-        Categorie(uid: '456', name: 'Corqqsdossol '),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol'),
-        Categorie(uid: '456', name: 'Corqqsdossol fgh fgh '),
-      ]);
-    }
+  bool changeTribuSelected(GouvDataRecordWrapper tribu) {
+    streamTribuSelected.sink.add(tribu);
+  }
 
-    if (pageNumber == 2) {
-      completer.complete([
-        Categorie(uid: '123', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono dfghdf gh dfg'),
-        Categorie(uid: '456', name: 'kimono '),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono'),
-        Categorie(uid: '456', name: 'kimono fgh fgh '),
-      ]);
+  bool changeCameraPosition(
+      GouvDataRecordWrapper tribu, GoogleMapController controller) {
+    if (controller != null) {
+      CameraPosition position = CameraPosition(
+        target: LatLng(
+            tribu.geometry.coordinates[1], tribu.geometry.coordinates[0]),
+        zoom: 14.4746,
+      );
+      controller.animateCamera(CameraUpdate.newCameraPosition(position));
+      return true;
     }
-    return completer.future;
+    return false;
+  }
+
+  Set<Marker> getMarkers(List<GouvDataRecordWrapper> data) {
+    return data.map((e) {
+      return Marker(
+          markerId: MarkerId(e.recordid),
+          position:
+              LatLng(e.geometry.coordinates[1], e.geometry.coordinates[0]),
+          infoWindow: InfoWindow(title: e.fields.nom_tribu));
+    }).toSet();
   }
 }

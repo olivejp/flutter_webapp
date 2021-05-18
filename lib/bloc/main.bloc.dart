@@ -22,13 +22,13 @@ class MainBloc {
 
   // Future builder wich initiate the Firebase framework.
   Future<dynamic> initThridParty() {
-    return Future.delayed(Duration(milliseconds: 1000))
-        .then((value) => Firebase.initializeApp().catchError((error) => print(
-            'Erreur lors de l' 'initialisation de Firebase : ' +
-                error.toString())))
+    return Firebase.initializeApp()
         .then((value) => storageService.initStorage().catchError((error) =>
             print('Erreur lors de l' 'initialisation du Storage : ' +
-                error.toString())));
+                error.toString())))
+        .catchError((error) => print(
+            'Erreur lors de l' 'initialisation de Firebase : ' +
+                error.toString()));
   }
 
   Future<dynamic> isConnected() {

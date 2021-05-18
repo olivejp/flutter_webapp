@@ -23,22 +23,38 @@ class TribuProvinceNord {
   final String classes_sig;
   final String nom_vernac;
 
-
-  TribuProvinceNord({this.objectid, this.point, this.photo,
-    this.distance_parcourue_depuis_lhotel_de_la_province_nord_en_km,
-    this.lieu, this.clas_temp, this.transport, this.fichier, this.district,
-    this.equipement, this.source, this.c_postal, this.t_mairie_m, this.nom,
-    this.d_mairie_k, this.commune, this.nom_maj, this.code_commu,
-    this.t_hpn_trib, this.goudron, this.nom_tribu, this.classes_sig,
-    this.nom_vernac});
-
+  TribuProvinceNord(
+      {this.objectid,
+      this.point,
+      this.photo,
+      this.distance_parcourue_depuis_lhotel_de_la_province_nord_en_km,
+      this.lieu,
+      this.clas_temp,
+      this.transport,
+      this.fichier,
+      this.district,
+      this.equipement,
+      this.source,
+      this.c_postal,
+      this.t_mairie_m,
+      this.nom,
+      this.d_mairie_k,
+      this.commune,
+      this.nom_maj,
+      this.code_commu,
+      this.t_hpn_trib,
+      this.goudron,
+      this.nom_tribu,
+      this.classes_sig,
+      this.nom_vernac});
 
   factory TribuProvinceNord.fromJson(Map<String, dynamic> json) {
-    return new TribuProvinceNord(
+    TribuProvinceNord tribu = new TribuProvinceNord(
       objectid: json['objectid'],
       point: json['point'],
       photo: json['photo'],
-      distance_parcourue_depuis_lhotel_de_la_province_nord_en_km: json['distance_parcourue_depuis_lhotel_de_la_province_nord_en_km'],
+      distance_parcourue_depuis_lhotel_de_la_province_nord_en_km:
+          json['distance_parcourue_depuis_lhotel_de_la_province_nord_en_km'],
       lieu: json['lieu'],
       clas_temp: json['clas_temp'],
       transport: json['transport'],
@@ -59,5 +75,6 @@ class TribuProvinceNord {
       classes_sig: json['classes_sig'],
       nom_vernac: json['nom_vernac'],
     );
+    return tribu;
   }
 }
