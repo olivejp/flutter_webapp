@@ -14,7 +14,7 @@ class DataTablePage extends StatelessWidget {
   final Completer<GoogleMapController> _controller = Completer();
   GoogleMapController googleMapController;
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
+  static final CameraPosition _kProvinceNord = CameraPosition(
     target: LatLng(-20.6871372842, 164.78272383),
     zoom: 8.0,
   );
@@ -185,7 +185,7 @@ class DataTablePage extends StatelessWidget {
                 Flexible(
                     child: GoogleMap(
                   mapType: MapType.hybrid,
-                  initialCameraPosition: _kGooglePlex,
+                  initialCameraPosition: _kProvinceNord,
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
                   },
