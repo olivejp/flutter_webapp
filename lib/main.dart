@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webapp/bloc/main.bloc.dart';
+import 'package:flutter_webapp/widget/data-table-page.widget.dart';
 import 'package:flutter_webapp/widget/login.page.dart';
-import 'package:flutter_webapp/widget/my-home-page.widget.dart';
 import 'package:loading_animations/loading_animations.dart';
 
 void main() {
@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
                     stream: bloc.streamUser(),
                     builder: (context, snapshot) {
                       if (snapshot.data != null) {
-                        return MyHomePage('Tribus de la Province Nord');
+                        // return MyHomePage('Tribus de la Province Nord');
+                        return DataTablePage();
                       } else {
                         return LoginPage(namePage: 'Se connecter');
                       }
