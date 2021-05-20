@@ -7,21 +7,14 @@ import 'package:flutter_webapp/domain/gouv-data-record-wrapper.domain.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animations/loading_animations.dart';
 
-class DataTablePage extends StatelessWidget {
-  final DataTablePageBloc bloc = DataTablePageBloc();
+class ListTribu extends StatelessWidget {
+  final DataTablePageBloc bloc = DataTablePageBloc.getInstance();
+
   final ScrollController scrollController = ScrollController();
+
   final TextEditingController searchEditingController = TextEditingController();
-  final Completer<GoogleMapController> _controller = Completer();
-  GoogleMapController googleMapController;
 
-  static final CameraPosition _kProvinceNord = CameraPosition(
-    target: LatLng(-20.6871372842, 164.78272383),
-    zoom: 8.0,
-  );
-
-  DataTablePage() {
-    this.bloc.launchSearch();
-
+  ListTribu() {
     // Listen to scroll events. Launch a new search when reaching the bottom of the list.
     scrollController.addListener(() {
       if (scrollController.offset >=
@@ -31,8 +24,164 @@ class DataTablePage extends StatelessWidget {
         this.bloc.launchSearch();
       }
     });
+  }
 
-    _controller.future.then((controller) => googleMapController = controller);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: this.searchEditingController,
+                  onChanged: this.bloc.changeQuery,
+                  decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          this.searchEditingController.clear();
+                          this.bloc.changeQuery('');
+                        },
+                        icon: Icon(Icons.clear),
+                      ),
+                      border: UnderlineInputBorder(),
+                      hintText: 'Rechercher une tribu'),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Expanded(
+          child: Stack(fit: StackFit.expand, children: [
+            SingleChildScrollView(
+              controller: scrollController,
+              child: StreamBuilder<List<GouvDataRecordWrapper>>(
+                  stream: bloc.streamListTribus,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                      return DataTable(
+                          dataRowHeight: 24.25,
+                          headingRowHeight: 30.0,
+                          headingTextStyle:
+                              TextStyle(fontWeight: FontWeight.bold),
+                          dataTextStyle: TextStyle(fontSize: 12.0),
+                          showCheckboxColumn: false,
+                          columns: [
+                            DataColumn(
+                              label: Text('Nom'),
+                              onSort: (columnIndex, ascending) {
+                                bloc.changeSort('nom_tribu');
+                              },
+                            ),
+                            DataColumn(
+                              label: Text('Nom vernaculaire'),
+                              onSort: (columnIndex, ascending) {
+                                bloc.changeSort('nom_vernac');
+                              },
+                            ),
+                            DataColumn(
+                              label: Text('District'),
+                            ),
+                            DataColumn(
+                              label: Text('Commune'),
+                              onSort: (columnIndex, ascending) {
+                                bloc.changeSort('commune');
+                              },
+                            ),
+                          ],
+                          rows: snapshot.data.map((tribu) {
+                            return DataRow(
+                                onSelectChanged: (b) =>
+                                    bloc.changeTribuSelected(tribu),
+                                cells: [
+                                  DataCell(Text(tribu.fields.nom_tribu != null
+                                      ? tribu.fields.nom_tribu
+                                      : "")),
+                                  DataCell(Text(tribu.fields.nom_vernac != null
+                                      ? tribu.fields.nom_vernac
+                                      : "")),
+                                  DataCell(Text(tribu.fields.district != null
+                                      ? tribu.fields.district
+                                      : "")),
+                                  DataCell(Text(tribu.fields.commune != null
+                                      ? tribu.fields.commune
+                                      : "")),
+                                ]);
+                          }).toList());
+                    } else {
+                      return Text('Aucune données à afficher.');
+                    }
+                  }),
+            ),
+          ]),
+        ),
+      ],
+    );
+  }
+}
+
+class MapWidget extends StatelessWidget {
+  final DataTablePageBloc bloc = DataTablePageBloc.getInstance();
+
+  final Completer<GoogleMapController> _controller = Completer();
+
+  static final CameraPosition _kProvinceNord = CameraPosition(
+    target: LatLng(-20.6871372842, 164.78272383),
+    zoom: 8.0,
+  );
+
+  MapWidget() {
+    _controller.future.then((controller) => bloc.setMapController(controller));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Flexible(
+            child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: GoogleMap(
+              mapType: MapType.hybrid,
+              initialCameraPosition: _kProvinceNord,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+            ),
+          ),
+        )),
+        Flexible(
+            child: StreamBuilder<GouvDataRecordWrapper>(
+                stream: bloc.streamTribuSelected,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    GouvDataRecordWrapper tribu = snapshot.data;
+                    return Column(
+                      children: [
+                        Text(tribu.fields.nom),
+                        Text(tribu.fields.nom_vernac),
+                        Text(tribu.fields.district),
+                        Text(tribu.fields.code_commu.toString()),
+                      ],
+                    );
+                  } else {
+                    return Text('Aucune tribu sélectionnée.');
+                  }
+                }))
+      ],
+    );
+  }
+}
+
+class DataTablePage extends StatelessWidget {
+  final DataTablePageBloc bloc = DataTablePageBloc.getInstance();
+
+  DataTablePage() {
+    this.bloc.launchSearch();
   }
 
   @override
@@ -84,135 +233,25 @@ class DataTablePage extends StatelessWidget {
               ],
             )),
       ),
-      body: Row(
-        children: [
-          Flexible(
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: this.searchEditingController,
-                          onChanged: this.bloc.changeQuery,
-                          decoration: InputDecoration(
-                              suffixIcon: IconButton(
-                                onPressed: () {
-                                  this.searchEditingController.clear();
-                                  this.bloc.changeQuery('');
-                                },
-                                icon: Icon(Icons.clear),
-                              ),
-                              border: UnderlineInputBorder(),
-                              hintText: 'Rechercher une tribu'),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: Stack(fit: StackFit.expand, children: [
-                    SingleChildScrollView(
-                      controller: scrollController,
-                      child: StreamBuilder<List<GouvDataRecordWrapper>>(
-                          stream: bloc.streamListTribus,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return DataTable(
-                                  showCheckboxColumn: false,
-                                  columns: [
-                                    DataColumn(
-                                      label: Text('Nom'),
-                                      onSort: (columnIndex, ascending) {
-                                        bloc.changeSort('nom_tribu');
-                                      },
-                                    ),
-                                    DataColumn(
-                                      label: Text('Nom vernaculaire'),
-                                      onSort: (columnIndex, ascending) {
-                                        bloc.changeSort('nom_vernac');
-                                      },
-                                    ),
-                                    DataColumn(
-                                      label: Text('District'),
-                                    ),
-                                    DataColumn(
-                                      label: Text('Commune'),
-                                      onSort: (columnIndex, ascending) {
-                                        bloc.changeSort('commune');
-                                      },
-                                    ),
-                                  ],
-                                  rows: snapshot.data.map((tribu) {
-                                    return DataRow(
-                                        onSelectChanged: (b) =>
-                                            bloc.changeTribuSelected(
-                                                tribu, googleMapController),
-                                        cells: [
-                                          DataCell(Text(
-                                              tribu.fields.nom_tribu != null
-                                                  ? tribu.fields.nom_tribu
-                                                  : "")),
-                                          DataCell(Text(
-                                              tribu.fields.nom_vernac != null
-                                                  ? tribu.fields.nom_vernac
-                                                  : "")),
-                                          DataCell(Text(
-                                              tribu.fields.district != null
-                                                  ? tribu.fields.district
-                                                  : "")),
-                                          DataCell(Text(
-                                              tribu.fields.commune != null
-                                                  ? tribu.fields.commune
-                                                  : "")),
-                                        ]);
-                                  }).toList());
-                            } else {
-                              return Text('Aucune données à afficher.');
-                            }
-                          }),
-                    ),
-                  ]),
-                ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: Column(
-              children: [
-                Flexible(
-                    child: GoogleMap(
-                  mapType: MapType.hybrid,
-                  initialCameraPosition: _kProvinceNord,
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-                  },
-                )),
-                Flexible(
-                    child: StreamBuilder<GouvDataRecordWrapper>(
-                        stream: bloc.streamTribuSelected,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            GouvDataRecordWrapper tribu = snapshot.data;
-                            return Column(
-                              children: [
-                                Text(tribu.fields.nom),
-                                Text(tribu.fields.nom_vernac),
-                                Text(tribu.fields.district),
-                                Text(tribu.fields.code_commu.toString()),
-                              ],
-                            );
-                          } else {
-                            return Text('Aucune tribu sélectionnée.');
-                          }
-                        }))
-              ],
-            ),
-          ),
-        ],
-      ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth > 700) {
+          return Row(
+            children: [
+              Flexible(
+                child: ListTribu(),
+              ),
+              Flexible(child: MapWidget()),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              Flexible(child: MapWidget()),
+              Flexible(child: ListTribu())
+            ],
+          );
+        }
+      }),
     );
   }
 }

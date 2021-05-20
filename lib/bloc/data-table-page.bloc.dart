@@ -9,8 +9,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
 class DataTablePageBloc {
+
+  static DataTablePageBloc _instance;
+
   final TribuProvinceNordService tribuProvinceNordService =
       TribuProvinceNordService.getInstance;
+
+  GoogleMapController googleMapController;
 
   int pageNumber = 0;
 
@@ -22,8 +27,6 @@ class DataTablePageBloc {
 
   String sort = '';
 
-  Timer _debounce;
-
   List<GouvDataRecordWrapper> listTribus = [];
 
   BehaviorSubject<List<GouvDataRecordWrapper>> streamListTribus =
@@ -33,10 +36,30 @@ class DataTablePageBloc {
 
   BehaviorSubject<int> streamTotalNumber = BehaviorSubject(seedValue: 0);
 
+  BehaviorSubject<String> streamQuery = BehaviorSubject(seedValue: "");
+
   BehaviorSubject<GouvDataRecordWrapper> streamTribuSelected =
       BehaviorSubject(seedValue: null);
 
-  DataTablePageBloc();
+  DataTablePageBloc._() {
+    streamQuery.debounce(Duration(milliseconds: 500)).listen((query) {
+      this.query = query;
+      this.pageNumber = 0;
+      this.initList();
+      this.launchSearch();
+    });
+  }
+
+  static DataTablePageBloc getInstance() {
+    if (_instance == null) {
+      _instance = DataTablePageBloc._();
+    }
+    return _instance;
+  }
+
+  setMapController(GoogleMapController controller) {
+    this.googleMapController = controller;
+  }
 
   void launchSearch() {
     Map<String, dynamic> queryParameters = new HashMap();
@@ -92,14 +115,7 @@ class DataTablePageBloc {
   }
 
   void changeQuery(String query) {
-    this.query = query;
-    this.pageNumber = 0;
-    this.initList();
-
-    if (_debounce?.isActive ?? false) _debounce.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      this.launchSearch();
-    });
+    this.streamQuery.sink.add(query);
   }
 
   void initList() {
@@ -123,20 +139,22 @@ class DataTablePageBloc {
   }
 
   void changeTribuSelected(
-      GouvDataRecordWrapper tribu, GoogleMapController controller) {
+      GouvDataRecordWrapper tribu) {
     streamTribuSelected.sink.add(tribu);
-    changeCameraPosition(tribu, controller);
+    if (this.googleMapController != null) {
+      changeCameraPosition(tribu);
+    }
   }
 
   bool changeCameraPosition(
-      GouvDataRecordWrapper tribu, GoogleMapController controller) {
-    if (controller != null) {
+      GouvDataRecordWrapper tribu) {
+    if (googleMapController != null) {
       CameraPosition position = CameraPosition(
         target: LatLng(
             tribu.geometry.coordinates[1], tribu.geometry.coordinates[0]),
         zoom: 14.4746,
       );
-      controller.animateCamera(CameraUpdate.newCameraPosition(position));
+      googleMapController.animateCamera(CameraUpdate.newCameraPosition(position));
       return true;
     }
     return false;
