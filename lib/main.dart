@@ -11,7 +11,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final MainBloc bloc = MainBloc.getInstance();
-  final appTitle = 'Les tribus de Nouvelle Calédonie';
+  final appTitle = 'Les tribus de la Province Nord de la Nouvelle Calédonie';
 
   @override
   Widget build(BuildContext context) {
