@@ -13,6 +13,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -36,10 +37,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: build/web
-          path: build/web
+          name: web
+          path: build
 
   deploy:
+    name: Deploy
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -49,8 +52,8 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@master
         with:
-          name: build/web
-          path: buld/web
+          name: web
+          path: build
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
