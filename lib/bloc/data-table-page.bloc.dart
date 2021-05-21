@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_webapp/domain/gouv-data-record-wrapper.domain.dart';
 import 'package:flutter_webapp/domain/gouv-data-wrapper.domain.dart';
 import 'package:flutter_webapp/service/rest/tribu-pnord.service.dart';
@@ -158,5 +159,9 @@ class DataTablePageBloc {
       return true;
     }
     return false;
+  }
+
+  void logout() {
+    FirebaseAuth.instance.signOut();
   }
 }

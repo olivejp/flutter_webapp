@@ -54,50 +54,60 @@ class _LoginPageState extends State<LoginPage> {
           )),
         ),
         body: Center(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 36.0, right: 20.0, left: 20.0, bottom: 36.0),
-                child: RaisedButton(
-                  onPressed: signInWithGoogle,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        'Se connecter avec Google',
-                        style: TextStyle(fontWeight: FontWeight.w200),
-                      )
-                    ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: 450, maxWidth: 500),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 36.0, right: 20.0, left: 20.0, bottom: 36.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: 50),
+                    child: RaisedButton(
+                      onPressed: signInWithGoogle,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(
+                            'S\'authentifier avec Google',
+                            style: TextStyle(fontWeight: FontWeight.w200),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 0.0, right: 20.0, left: 20.0, bottom: 36.0),
-                child: RaisedButton(
-                  onPressed: signInAnonymously,
-                  color: Colors.black,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        'Se connecter anonymement',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w200, color: Colors.white),
-                      )
-                    ],
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 0.0, right: 20.0, left: 20.0, bottom: 36.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: 50),
+                    child: RaisedButton(
+                      onPressed: signInAnonymously,
+                      color: Colors.black,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(
+                            'S\'authentifier anonymement',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w200,
+                                color: Colors.white),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ));
   }

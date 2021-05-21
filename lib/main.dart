@@ -5,6 +5,7 @@ import 'package:flutter_webapp/widget/data-table-page.widget.dart';
 import 'package:flutter_webapp/widget/login.page.dart';
 import 'package:loading_animations/loading_animations.dart';
 
+
 void main() {
   runApp(MyApp());
 }
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
                         // return MyHomePage('Tribus de la Province Nord');
                         return DataTablePage();
                       } else {
-                        return LoginPage(namePage: 'Se connecter');
+                        return LoginPage(namePage: 'Connexion');
                       }
                     });
               } else if (snapshot.hasError) {

@@ -192,7 +192,17 @@ class DataTablePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(child: Text('Liste des tribus de Province Nord')),
-            Flexible(child: Icon(Icons.refresh)),
+            Flexible(
+                child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.person),
+                  tooltip: 'Se déconnecter',
+                  onPressed: () => this.bloc.logout(),
+                )
+              ],
+            )),
           ],
         ),
       ),
