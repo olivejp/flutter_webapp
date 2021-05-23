@@ -47,7 +47,7 @@ class ListTribu extends StatelessWidget {
                         icon: Icon(Icons.clear),
                       ),
                       border: UnderlineInputBorder(),
-                      hintText: 'Rechercher une tribu'),
+                      hintText: 'Commencer à taper pour rechercher une tribu...'),
                 ),
               ),
             ),
@@ -188,6 +188,7 @@ class DataTablePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 40.0,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -248,7 +249,55 @@ class DataTablePage extends StatelessWidget {
           return Row(
             children: [
               Flexible(
-                child: ListTribu(),
+                child: DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    children: [
+                      TabBar(
+                        tabs: [
+                          Tab(
+                            child: ListTile(
+                              title: Text(
+                                'Recherche tribus',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              leading: Icon(
+                                Icons.search,
+                                color: Colors.blue,
+                              ),
+                              trailing: IconButton(
+                                onPressed: () => {},
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Colors.deepOrange
+                                ),
+                              ),
+                            ),
+                          ),
+                          Tab(
+                            child: ListTile(
+                              title: Text(
+                                'Randonnées',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              leading: Icon(
+                                Icons.transfer_within_a_station,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                      ),
+                      Expanded(
+                        child: TabBarView(children: [
+                          ListTribu(),
+                          Icon(Icons.baby_changing_station),
+                        ]),
+                      )
+                    ],
+                  ),
+                ),
               ),
               Flexible(child: MapWidget()),
             ],
